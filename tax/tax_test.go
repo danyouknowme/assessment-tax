@@ -117,7 +117,7 @@ func TestCalculateTaxWithTotalIncomeOnly(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := Calculate(tc.input.TotalIncome, tc.input.Wht)
+			got := Calculate(tc.input.TotalIncome, tc.input.Wht, tc.input.Allowances)
 
 			if got != tc.expect {
 				t.Errorf("Expected %v, got %v", tc.expect, got)
@@ -174,7 +174,54 @@ func TestCalculateTaxWithWht(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := Calculate(tc.input.TotalIncome, tc.input.Wht)
+			got := Calculate(tc.input.TotalIncome, tc.input.Wht, tc.input.Allowances)
+
+			if got != tc.expect {
+				t.Errorf("Expected %v, got %v", tc.expect, got)
+			}
+		})
+	}
+}
+
+func TestCalculateTaxWithAllowances(t *testing.T) {
+	testCases := []testCase{
+		{
+			name: "Total income 0, WHT 0.0 and no allowances, should return 0",
+			input: TaxCalculationRequest{
+				TotalIncome: 0.0,
+				Wht:         0.0,
+				Allowances:  []Allowance{},
+			},
+			expect: 0.0,
+		},
+		{
+			name: "Total income 500,000.0 and WHT 0.0 and donation allowance 20,000 should return 39,000",
+			input: TaxCalculationRequest{
+				TotalIncome: 500000.0,
+				Wht:         0.0,
+				Allowances: []Allowance{
+					{AllowanceType: "donation", Amount: 10000.00},
+					{AllowanceType: "donation", Amount: 20000.00},
+				},
+			},
+			expect: 26000.0,
+		},
+		{
+			name: "Total income 500,000.0 and WHT 0.0 and donation allowance 200,000 should return 19,000",
+			input: TaxCalculationRequest{
+				TotalIncome: 500000.0,
+				Wht:         0.0,
+				Allowances: []Allowance{
+					{AllowanceType: "donation", Amount: 200000.00},
+				},
+			},
+			expect: 19000.0,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := Calculate(tc.input.TotalIncome, tc.input.Wht, tc.input.Allowances)
 
 			if got != tc.expect {
 				t.Errorf("Expected %v, got %v", tc.expect, got)

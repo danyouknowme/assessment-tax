@@ -15,7 +15,10 @@ type Allowance struct {
 	Amount        float64 `json:"amount"`
 }
 
-const PersonalAllowance = 60000.0
+const (
+	PersonalAllowance    = 60000.0
+	MaxDonationAllowance = 100000.0
+)
 
 type TaxBracket struct {
 	MinTotalIncome float64
@@ -31,9 +34,12 @@ var taxBrackets = []TaxBracket{
 	{MinTotalIncome: 2000000, MaxTotalIncome: math.MaxFloat64, TaxRate: 0.35},
 }
 
-func Calculate(totalIncome, wht float64) float64 {
+func Calculate(totalIncome, wht float64, allowances []Allowance) float64 {
 	var tax float64 = 0
-	taxableIncome := totalIncome - PersonalAllowance
+
+	donationAllowance := calculateDonationAllowance(allowances)
+	taxableIncome := calculateTaxableIncome(totalIncome, donationAllowance)
+
 	for _, bracket := range taxBrackets {
 		if taxableIncome <= 0 {
 			break
@@ -49,6 +55,25 @@ func Calculate(totalIncome, wht float64) float64 {
 	tax -= wht
 
 	return formatCalculatedTax(tax)
+}
+
+func calculateTaxableIncome(totalIncome float64, donationAllowance float64) float64 {
+	return totalIncome - PersonalAllowance - donationAllowance
+}
+
+func calculateDonationAllowance(allowances []Allowance) float64 {
+	var donationAllowance float64 = 0
+	for _, allowance := range allowances {
+		if allowance.AllowanceType == "donation" {
+			donationAllowance += allowance.Amount
+		}
+	}
+
+	if donationAllowance > MaxDonationAllowance {
+		return MaxDonationAllowance
+	}
+
+	return donationAllowance
 }
 
 func formatCalculatedTax(tax float64) float64 {
