@@ -2,12 +2,21 @@ package tax
 
 import "testing"
 
-func TestCalculateTaxWithIncomeOnly(t *testing.T) {
+func TestCalculateTaxWithTotalIncomeOnly(t *testing.T) {
 	testCases := []struct {
 		name   string
 		input  TaxCalculationRequest
 		expect float64
 	}{
+		{
+			name: "Total income 0, should return 0",
+			input: TaxCalculationRequest{
+				TotalIncome: 0.0,
+				Wht:         0.0,
+				Allowances:  []Allowance{},
+			},
+			expect: 0.0,
+		},
 		{
 			name: "Calculate tax with total income 500000.0",
 			input: TaxCalculationRequest{
