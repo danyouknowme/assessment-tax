@@ -31,9 +31,9 @@ var taxBrackets = []TaxBracket{
 	{MinTotalIncome: 2000000, MaxTotalIncome: math.MaxFloat64, TaxRate: 0.35},
 }
 
-func Calculate(netIncome float64) float64 {
+func Calculate(totalIncome, wht float64) float64 {
 	var tax float64 = 0
-	taxableIncome := netIncome - PersonalAllowance
+	taxableIncome := totalIncome - PersonalAllowance
 	for _, bracket := range taxBrackets {
 		if taxableIncome <= 0 {
 			break
@@ -45,5 +45,12 @@ func Calculate(netIncome float64) float64 {
 		tax += taxInBracket
 		taxableIncome -= incomeInBracket
 	}
-	return tax
+
+	tax -= wht
+
+	return formatCalculatedTax(tax)
+}
+
+func formatCalculatedTax(tax float64) float64 {
+	return math.Round(tax*100) / 100
 }

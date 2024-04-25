@@ -15,7 +15,7 @@ func CalculateTax(c echo.Context) error {
 
 	totalIncome := req.TotalIncome
 
-	taxVal := tax.Calculate(totalIncome)
+	taxVal := tax.Calculate(totalIncome, req.Wht)
 
 	return c.JSON(http.StatusOK, map[string]float64{
 		"tax": taxVal,

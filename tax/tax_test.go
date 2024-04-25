@@ -2,12 +2,14 @@ package tax
 
 import "testing"
 
+type testCase struct {
+	name   string
+	input  TaxCalculationRequest
+	expect float64
+}
+
 func TestCalculateTaxWithTotalIncomeOnly(t *testing.T) {
-	testCases := []struct {
-		name   string
-		input  TaxCalculationRequest
-		expect float64
-	}{
+	testCases := []testCase{
 		{
 			name: "Total income 0, should return 0",
 			input: TaxCalculationRequest{
@@ -115,8 +117,64 @@ func TestCalculateTaxWithTotalIncomeOnly(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			totalIncome := tc.input.TotalIncome
-			got := Calculate(totalIncome)
+			got := Calculate(tc.input.TotalIncome, tc.input.Wht)
+
+			if got != tc.expect {
+				t.Errorf("Expected %v, got %v", tc.expect, got)
+			}
+		})
+	}
+}
+
+func TestCalculateTaxWithWht(t *testing.T) {
+	testCases := []testCase{
+		{
+			name: "Total income 0 and WHT 0 should return 0",
+			input: TaxCalculationRequest{
+				TotalIncome: 0.0,
+				Wht:         0.0,
+				Allowances:  []Allowance{},
+			},
+			expect: 0.0,
+		},
+		{
+			name: "Total income 500,000.0 and WHT 0.0 should return 29,000",
+			input: TaxCalculationRequest{
+				TotalIncome: 500000.0,
+				Wht:         0.0,
+				Allowances: []Allowance{
+					{AllowanceType: "donation", Amount: 0.00},
+				},
+			},
+			expect: 29000.0,
+		},
+		{
+			name: "Total income 500,000.0 and WHT 25,000.0 should return 4,000",
+			input: TaxCalculationRequest{
+				TotalIncome: 500000.0,
+				Wht:         25000.0,
+				Allowances: []Allowance{
+					{AllowanceType: "donation", Amount: 0.00},
+				},
+			},
+			expect: 4000.0,
+		},
+		{
+			name: "Total income 500,000.0 and WHT 25,000.0 should return 4,000",
+			input: TaxCalculationRequest{
+				TotalIncome: 500000.0,
+				Wht:         29000.0,
+				Allowances: []Allowance{
+					{AllowanceType: "donation", Amount: 0.00},
+				},
+			},
+			expect: 0.0,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := Calculate(tc.input.TotalIncome, tc.input.Wht)
 
 			if got != tc.expect {
 				t.Errorf("Expected %v, got %v", tc.expect, got)
