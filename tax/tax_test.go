@@ -18,6 +18,33 @@ func TestCalculateTaxWithTotalIncomeOnly(t *testing.T) {
 			expect: 0.0,
 		},
 		{
+			name: "Total income 30,000.0, should return 0",
+			input: TaxCalculationRequest{
+				TotalIncome: 30000.0,
+				Wht:         0.0,
+				Allowances:  []Allowance{},
+			},
+			expect: 0.0,
+		},
+		{
+			name: "Total income 150,000.0, should return 0",
+			input: TaxCalculationRequest{
+				TotalIncome: 150000.0,
+				Wht:         0.0,
+				Allowances:  []Allowance{},
+			},
+			expect: 0.0,
+		},
+		{
+			name: "Total income 150,001.0, should return 0",
+			input: TaxCalculationRequest{
+				TotalIncome: 150001.0,
+				Wht:         0.0,
+				Allowances:  []Allowance{},
+			},
+			expect: 0,
+		},
+		{
 			name: "Calculate tax with total income 500000.0",
 			input: TaxCalculationRequest{
 				TotalIncome: 500000.0,
