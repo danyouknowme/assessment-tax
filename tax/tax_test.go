@@ -2,7 +2,7 @@ package tax
 
 import "testing"
 
-func TestCalculateTax(t *testing.T) {
+func TestCalculateTaxWithIncomeOnly(t *testing.T) {
 	testCases := []struct {
 		name   string
 		input  TaxCalculationRequest
