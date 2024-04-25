@@ -45,9 +45,5 @@ func Calculate(netIncome float64) float64 {
 		tax += taxInBracket
 		taxableIncome -= incomeInBracket
 	}
-	return formatCalculatedTax(tax)
-}
-
-func formatCalculatedTax(tax float64) float64 {
-	return math.Round(tax*100) / 100
+	return tax
 }
