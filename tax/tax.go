@@ -16,7 +16,7 @@ type Allowance struct {
 }
 
 const (
-	PersonalAllowance    = 60000.0
+	PersonalDeduction    = 60000.0
 	MaxDonationAllowance = 100000.0
 )
 
@@ -81,7 +81,7 @@ func GetTaxLevels(totalIncome, wht float64, allowances []Allowance) []TaxLevel {
 }
 
 func calculateTaxableIncome(totalIncome float64, donationAllowance float64) float64 {
-	return totalIncome - PersonalAllowance - donationAllowance
+	return totalIncome - PersonalDeduction - donationAllowance
 }
 
 func calculateDonationAllowance(allowances []Allowance) float64 {
