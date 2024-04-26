@@ -1,6 +1,8 @@
 package api
 
 import (
+	"database/sql"
+	"errors"
 	"github.com/danyouknowme/assessment-tax/db"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -24,6 +26,12 @@ func (s *Server) SettingPersonalDeduction(c echo.Context) error {
 		},
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err := errors.New("personal deduction not found")
+			return c.JSON(http.StatusNotFound, errorResponse(err))
+		}
+
+		err := errors.New("failed to update personal deduction")
 		return c.JSON(http.StatusInternalServerError, errorResponse(err))
 	}
 
