@@ -12,12 +12,12 @@ import (
 func TestBasicAuthMiddleware(t *testing.T) {
 	testCases := []struct {
 		name          string
-		setupAuth     func(t *testing.T, request *http.Request)
+		setupAuth     func(request *http.Request)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name: "OK",
-			setupAuth: func(t *testing.T, request *http.Request) {
+			setupAuth: func(request *http.Request) {
 				request.SetBasicAuth("adminTest", "test!")
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -26,14 +26,14 @@ func TestBasicAuthMiddleware(t *testing.T) {
 		},
 		{
 			name:      "Missing Basic Auth",
-			setupAuth: func(t *testing.T, request *http.Request) {},
+			setupAuth: func(request *http.Request) {},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
 		{
 			name: "Invalid Username or Password",
-			setupAuth: func(t *testing.T, request *http.Request) {
+			setupAuth: func(request *http.Request) {
 				request.SetBasicAuth("adminTest", "wrongPassword")
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -58,7 +58,7 @@ func TestBasicAuthMiddleware(t *testing.T) {
 			request, err := http.NewRequest(http.MethodGet, "/auth", nil)
 			require.NoError(t, err)
 
-			tc.setupAuth(t, request)
+			tc.setupAuth(request)
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(t, recorder)
 		})
