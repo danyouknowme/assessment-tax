@@ -3,12 +3,20 @@ package tax
 import (
 	"reflect"
 	"testing"
+
+	"github.com/danyouknowme/assessment-tax/db"
 )
 
 type testCase struct {
 	name   string
 	input  TaxCalculationRequest
 	expect float64
+}
+
+var defaultDeductions = []db.Deduction{
+	{Type: "personal", Amount: 60000.0},
+	{Type: "donation", Amount: 100000.0},
+	{Type: "k-receipt", Amount: 50000.0},
 }
 
 func TestCalculateTaxWithTotalIncomeOnly(t *testing.T) {
@@ -120,7 +128,7 @@ func TestCalculateTaxWithTotalIncomeOnly(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := Calculate(tc.input.TotalIncome, tc.input.Wht, tc.input.Allowances)
+			got := Calculate(defaultDeductions, tc.input)
 
 			if got != tc.expect {
 				t.Errorf("Expected %v, got %v", tc.expect, got)
@@ -177,7 +185,7 @@ func TestCalculateTaxWithWht(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := Calculate(tc.input.TotalIncome, tc.input.Wht, tc.input.Allowances)
+			got := Calculate(defaultDeductions, tc.input)
 
 			if got != tc.expect {
 				t.Errorf("Expected %v, got %v", tc.expect, got)
@@ -224,7 +232,7 @@ func TestCalculateTaxWithDonationAllowances(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := Calculate(tc.input.TotalIncome, tc.input.Wht, tc.input.Allowances)
+			got := Calculate(defaultDeductions, tc.input)
 
 			if got != tc.expect {
 				t.Errorf("Expected %v, got %v", tc.expect, got)
@@ -275,7 +283,7 @@ func TestGetTaxLevels(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := GetTaxLevels(tc.input.TotalIncome, tc.input.Wht, tc.input.Allowances)
+			got := GetTaxLevels(defaultDeductions, tc.input)
 
 			if !reflect.DeepEqual(got, tc.expect) {
 				t.Errorf("Expected %v, got %v", tc.expect, got)
