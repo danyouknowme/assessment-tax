@@ -10,7 +10,7 @@ import (
 )
 
 func (s *Server) CalculateTax(c echo.Context) error {
-	var req tax.TaxCalculationRequest
+	var req tax.CalculationRequest
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, errorResponse(err))
 	}
