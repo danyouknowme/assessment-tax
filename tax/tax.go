@@ -2,6 +2,8 @@ package tax
 
 import (
 	"math"
+
+	"github.com/danyouknowme/assessment-tax/db"
 )
 
 type TaxCalculationRequest struct {
@@ -15,16 +17,11 @@ type Allowance struct {
 	Amount        float64 `json:"amount"`
 }
 
-const (
-	PersonalDeduction    = 60000.0
-	MaxDonationAllowance = 100000.0
-)
-
-func Calculate(totalIncome, wht float64, allowances []Allowance) float64 {
+func Calculate(defaultDeductions []db.Deduction, req TaxCalculationRequest) float64 {
 	var tax float64 = 0
 
-	donationAllowance := calculateDonationAllowance(allowances)
-	taxableIncome := calculateTaxableIncome(totalIncome, donationAllowance)
+	donationAllowance := calculateDonationAllowance(getDeductionByType(defaultDeductions, "donation").Amount, req.Allowances)
+	taxableIncome := calculateTaxableIncome(req.TotalIncome, getDeductionByType(defaultDeductions, "personal").Amount, donationAllowance)
 
 	for _, bracket := range taxBrackets {
 		if taxableIncome <= 0 {
@@ -38,7 +35,7 @@ func Calculate(totalIncome, wht float64, allowances []Allowance) float64 {
 		taxableIncome -= incomeInBracket
 	}
 
-	tax -= wht
+	tax -= req.Wht
 
 	return formatCalculatedTax(tax)
 }
@@ -48,11 +45,11 @@ type TaxLevel struct {
 	Tax   float64 `json:"tax"`
 }
 
-func GetTaxLevels(totalIncome, wht float64, allowances []Allowance) []TaxLevel {
+func GetTaxLevels(defaultDeductions []db.Deduction, req TaxCalculationRequest) []TaxLevel {
 	var taxLevels []TaxLevel
 
-	donationAllowance := calculateDonationAllowance(allowances)
-	taxableIncome := calculateTaxableIncome(totalIncome, donationAllowance)
+	donationAllowance := calculateDonationAllowance(getDeductionByType(defaultDeductions, "donation").Amount, req.Allowances)
+	taxableIncome := calculateTaxableIncome(req.TotalIncome, getDeductionByType(defaultDeductions, "personal").Amount, donationAllowance)
 
 	for _, bracket := range taxBrackets {
 		bracketRange := bracket.MaxTotalIncome - bracket.MinTotalIncome
@@ -65,11 +62,11 @@ func GetTaxLevels(totalIncome, wht float64, allowances []Allowance) []TaxLevel {
 	return taxLevels
 }
 
-func calculateTaxableIncome(totalIncome float64, donationAllowance float64) float64 {
-	return totalIncome - PersonalDeduction - donationAllowance
+func calculateTaxableIncome(totalIncome, personalDeduction, donationAllowance float64) float64 {
+	return totalIncome - personalDeduction - donationAllowance
 }
 
-func calculateDonationAllowance(allowances []Allowance) float64 {
+func calculateDonationAllowance(maxDonationDeduction float64, allowances []Allowance) float64 {
 	var donationAllowance float64 = 0
 	for _, allowance := range allowances {
 		if allowance.AllowanceType == "donation" {
@@ -77,8 +74,8 @@ func calculateDonationAllowance(allowances []Allowance) float64 {
 		}
 	}
 
-	if donationAllowance > MaxDonationAllowance {
-		return MaxDonationAllowance
+	if donationAllowance > maxDonationDeduction {
+		return maxDonationDeduction
 	}
 
 	return donationAllowance
@@ -86,4 +83,14 @@ func calculateDonationAllowance(allowances []Allowance) float64 {
 
 func formatCalculatedTax(tax float64) float64 {
 	return math.Round(tax*100) / 100
+}
+
+func getDeductionByType(deductions []db.Deduction, deductionType string) db.Deduction {
+	for _, deduction := range deductions {
+		if deduction.Type == deductionType {
+			return deduction
+		}
+	}
+
+	return db.Deduction{}
 }
