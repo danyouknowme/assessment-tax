@@ -50,6 +50,91 @@ func TestCalculateTaxAPI(t *testing.T) {
 			},
 		},
 		{
+			name: "Invalid Body(Missing TotalIncome)",
+			body: map[string]interface{}{
+				"wht":        0.0,
+				"allowances": []map[string]interface{}{},
+			},
+			buildStubs: func(store *mockdb.MockStore) {},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "Invalid Body(TotalIncome is negative)",
+			body: map[string]interface{}{
+				"totalIncome": -500000.0,
+				"allowances":  []map[string]interface{}{},
+			},
+			buildStubs: func(store *mockdb.MockStore) {},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "Invalid Body(WHT is negative)",
+			body: map[string]interface{}{
+				"totalIncome": 500000.0,
+				"wht":         -100000.0,
+				"allowances":  []map[string]interface{}{},
+			},
+			buildStubs: func(store *mockdb.MockStore) {},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "Invalid Body(Wht more than TotalIncome)",
+			body: map[string]interface{}{
+				"totalIncome": 500000.0,
+				"wht":         1000000.0,
+				"allowances": []map[string]interface{}{
+					{
+						"allowanceType": "donation",
+						"amount":        200000.0,
+					},
+				},
+			},
+			buildStubs: func(store *mockdb.MockStore) {},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "Invalid Body(Invalid Allowance Type)",
+			body: map[string]interface{}{
+				"totalIncome": 500000.0,
+				"wht":         0.0,
+				"allowances": []map[string]interface{}{
+					{
+						"allowanceType": "invalid",
+						"amount":        200000.0,
+					},
+				},
+			},
+			buildStubs: func(store *mockdb.MockStore) {},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "Invalid Body(Invalid Allowance Amount)",
+			body: map[string]interface{}{
+				"totalIncome": 500000.0,
+				"wht":         0.0,
+				"allowances": []map[string]interface{}{
+					{
+						"allowanceType": "donation",
+						"amount":        -200000.0,
+					},
+				},
+			},
+			buildStubs: func(store *mockdb.MockStore) {},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
 			name: "Not Found Default Deductions",
 			body: map[string]interface{}{
 				"totalIncome": 500000.0,
