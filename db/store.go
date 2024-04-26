@@ -9,6 +9,7 @@ import (
 type Store interface {
 	GetAllDeductions(ctx context.Context) ([]Deduction, error)
 	GetDeductionByType(ctx context.Context, deductionType string) (*Deduction, error)
+	UpdateDeductionByType(ctx context.Context, deductionType string, arg UpdateDeductionParams) (*Deduction, error)
 }
 
 type SQLStore struct {
@@ -21,9 +22,9 @@ func NewStore(conn *sql.DB) Store {
 	}
 }
 
-func (c *SQLStore) GetAllDeductions(ctx context.Context) ([]Deduction, error) {
+func (s *SQLStore) GetAllDeductions(ctx context.Context) ([]Deduction, error) {
 	var deductions []Deduction
-	rows, err := c.db.QueryContext(ctx, "SELECT type, amount FROM deductions")
+	rows, err := s.db.QueryContext(ctx, "SELECT type, amount FROM deductions")
 	if err != nil {
 		return nil, err
 	}
@@ -56,4 +57,27 @@ func (s *SQLStore) GetDeductionByType(ctx context.Context, deductionType string)
 	}
 
 	return &d, err
+}
+
+func (s *SQLStore) UpdateDeductionByType(ctx context.Context, deductionType string, arg UpdateDeductionParams) (*Deduction, error) {
+	stmt, err := s.db.Prepare(`
+		UPDATE deductions
+		SET
+		    amount = COALESCE($1, amount),
+			updated_at = NOW()
+		WHERE 
+			type = $2
+		RETURNING type, amount
+	`)
+	if err != nil {
+		return nil, err
+	}
+
+	var d Deduction
+	err = stmt.QueryRowContext(ctx, arg.Amount, deductionType).Scan(&d.Type, &d.Amount)
+	if err != nil {
+		return nil, err
+	}
+
+	return &d, nil
 }

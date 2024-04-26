@@ -29,6 +29,7 @@ func (s *Server) setupRouter() {
 	e := echo.New()
 
 	e.POST("/tax/calculations", s.CalculateTax)
+	e.POST("/admin/deductions/personal", s.basicAuth(s.SettingPersonalDeduction))
 
 	s.router = e
 }

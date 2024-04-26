@@ -64,3 +64,18 @@ func (mr *MockStoreMockRecorder) GetDeductionByType(ctx, deductionType interface
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeductionByType", reflect.TypeOf((*MockStore)(nil).GetDeductionByType), ctx, deductionType)
 }
+
+// UpdateDeductionByType mocks base method.
+func (m *MockStore) UpdateDeductionByType(ctx context.Context, deductionType string, arg db.UpdateDeductionParams) (*db.Deduction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateDeductionByType", ctx, deductionType, arg)
+	ret0, _ := ret[0].(*db.Deduction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateDeductionByType indicates an expected call of UpdateDeductionByType.
+func (mr *MockStoreMockRecorder) UpdateDeductionByType(ctx, deductionType, arg interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDeductionByType", reflect.TypeOf((*MockStore)(nil).UpdateDeductionByType), ctx, deductionType, arg)
+}
