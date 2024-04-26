@@ -50,6 +50,32 @@ func TestCalculateTaxAPI(t *testing.T) {
 			},
 		},
 		{
+			name: "OK with Tax Refund",
+			body: map[string]interface{}{
+				"totalIncome": 500000.0,
+				"wht":         100000.0,
+				"allowances": []map[string]interface{}{
+					{
+						"allowanceType": "donation",
+						"amount":        200000.0,
+					},
+				},
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetAllDeductions(gomock.Any()).
+					Times(1).
+					Return([]db.Deduction{
+						{Type: "personal", Amount: 60000.0},
+						{Type: "donation", Amount: 100000.0},
+						{Type: "k-receipt", Amount: 50000.0},
+					}, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
 			name: "Invalid Body(Missing TotalIncome)",
 			body: map[string]interface{}{
 				"wht":        0.0,
