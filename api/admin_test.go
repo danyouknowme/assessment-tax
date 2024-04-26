@@ -45,6 +45,30 @@ func TestAdminSetPersonalDeductionAPI(t *testing.T) {
 			},
 		},
 		{
+			name: "Invalid Body(Missing Amount)",
+			body: map[string]float64{},
+			setupAuth: func(request *http.Request) {
+				request.SetBasicAuth("adminTest", "test!")
+			},
+			buildStubs: func(store *mockdb.MockStore) {},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "Invalid Body(Negative Amount)",
+			body: map[string]float64{
+				"amount": -70000.0,
+			},
+			setupAuth: func(request *http.Request) {
+				request.SetBasicAuth("adminTest", "test!")
+			},
+			buildStubs: func(store *mockdb.MockStore) {},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
 			name: "Not Found Personal Deduction",
 			body: map[string]float64{
 				"amount": 70000.0,
