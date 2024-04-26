@@ -8,9 +8,10 @@ import (
 )
 
 type testCase struct {
-	name   string
-	input  CalculationRequest
-	expect float64
+	name         string
+	input        CalculationRequest
+	expectTax    float64
+	expectRefund float64
 }
 
 var defaultDeductions = []db.Deduction{
@@ -28,7 +29,7 @@ func TestCalculateTaxWithTotalIncomeOnly(t *testing.T) {
 				Wht:         0.0,
 				Allowances:  []Allowance{},
 			},
-			expect: 0.0,
+			expectTax: 0.0,
 		},
 		{
 			name: "Total income 30,000.0, should return 0",
@@ -37,7 +38,7 @@ func TestCalculateTaxWithTotalIncomeOnly(t *testing.T) {
 				Wht:         0.0,
 				Allowances:  []Allowance{},
 			},
-			expect: 0.0,
+			expectTax: 0.0,
 		},
 		{
 			name: "Total income 150,000.0, should return 0",
@@ -46,7 +47,7 @@ func TestCalculateTaxWithTotalIncomeOnly(t *testing.T) {
 				Wht:         0.0,
 				Allowances:  []Allowance{},
 			},
-			expect: 0.0,
+			expectTax: 0.0,
 		},
 		{
 			name: "Total income 150,001.0, should return 0",
@@ -55,7 +56,7 @@ func TestCalculateTaxWithTotalIncomeOnly(t *testing.T) {
 				Wht:         0.0,
 				Allowances:  []Allowance{},
 			},
-			expect: 0.0,
+			expectTax: 0.0,
 		},
 		{
 			name: "Total income 500,000 should return 29,000",
@@ -66,7 +67,7 @@ func TestCalculateTaxWithTotalIncomeOnly(t *testing.T) {
 					{AllowanceType: "donation", Amount: 0.00},
 				},
 			},
-			expect: 29000.0,
+			expectTax: 29000.0,
 		},
 		{
 			name: "Total income 500,001 should return 29,000.1",
@@ -77,7 +78,7 @@ func TestCalculateTaxWithTotalIncomeOnly(t *testing.T) {
 					{AllowanceType: "donation", Amount: 0.00},
 				},
 			},
-			expect: 29000.1,
+			expectTax: 29000.1,
 		},
 		{
 			name: "Total income 1,000,000 should return 101,000",
@@ -86,7 +87,7 @@ func TestCalculateTaxWithTotalIncomeOnly(t *testing.T) {
 				Wht:         0.0,
 				Allowances:  []Allowance{},
 			},
-			expect: 101000.0,
+			expectTax: 101000.0,
 		},
 		{
 			name: "Total income 1,000,001 should return 101,000.15",
@@ -95,7 +96,7 @@ func TestCalculateTaxWithTotalIncomeOnly(t *testing.T) {
 				Wht:         0.0,
 				Allowances:  []Allowance{},
 			},
-			expect: 101000.15,
+			expectTax: 101000.15,
 		},
 		{
 			name: "Total income 2,000,000 should return 298,000",
@@ -104,7 +105,7 @@ func TestCalculateTaxWithTotalIncomeOnly(t *testing.T) {
 				Wht:         0.0,
 				Allowances:  []Allowance{},
 			},
-			expect: 298000.0,
+			expectTax: 298000.0,
 		},
 		{
 			name: "Total income 2,000,001 should return 298,000.2",
@@ -113,7 +114,7 @@ func TestCalculateTaxWithTotalIncomeOnly(t *testing.T) {
 				Wht:         0.0,
 				Allowances:  []Allowance{},
 			},
-			expect: 298000.2,
+			expectTax: 298000.2,
 		},
 		{
 			name: "Total income 4,000,000 should return 989,000",
@@ -122,16 +123,20 @@ func TestCalculateTaxWithTotalIncomeOnly(t *testing.T) {
 				Wht:         0.0,
 				Allowances:  []Allowance{},
 			},
-			expect: 989000.0,
+			expectTax: 989000.0,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := Calculate(defaultDeductions, tc.input)
+			tax, refund := Calculate(defaultDeductions, tc.input)
 
-			if got != tc.expect {
-				t.Errorf("Expected %v, got %v", tc.expect, got)
+			if tax != tc.expectTax {
+				t.Errorf("Expected %v, got %v", tc.expectTax, tax)
+			}
+
+			if refund != 0 {
+				t.Errorf("Expected 0, got %v", refund)
 			}
 		})
 	}
@@ -146,7 +151,7 @@ func TestCalculateTaxWithWht(t *testing.T) {
 				Wht:         0.0,
 				Allowances:  []Allowance{},
 			},
-			expect: 0.0,
+			expectTax: 0.0,
 		},
 		{
 			name: "Total income 500,000.0 and WHT 0.0 should return 29,000",
@@ -157,7 +162,7 @@ func TestCalculateTaxWithWht(t *testing.T) {
 					{AllowanceType: "donation", Amount: 0.00},
 				},
 			},
-			expect: 29000.0,
+			expectTax: 29000.0,
 		},
 		{
 			name: "Total income 500,000.0 and WHT 25,000.0 should return 4,000",
@@ -168,7 +173,7 @@ func TestCalculateTaxWithWht(t *testing.T) {
 					{AllowanceType: "donation", Amount: 0.00},
 				},
 			},
-			expect: 4000.0,
+			expectTax: 4000.0,
 		},
 		{
 			name: "Total income 500,000.0 and WHT 25,000.0 should return 4,000",
@@ -179,16 +184,20 @@ func TestCalculateTaxWithWht(t *testing.T) {
 					{AllowanceType: "donation", Amount: 0.00},
 				},
 			},
-			expect: 0.0,
+			expectTax: 0.0,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := Calculate(defaultDeductions, tc.input)
+			tax, refund := Calculate(defaultDeductions, tc.input)
 
-			if got != tc.expect {
-				t.Errorf("Expected %v, got %v", tc.expect, got)
+			if tax != tc.expectTax {
+				t.Errorf("Expected %v, got %v", tc.expectTax, tax)
+			}
+
+			if refund != 0 {
+				t.Errorf("Expected 0, got %v", refund)
 			}
 		})
 	}
@@ -203,7 +212,7 @@ func TestCalculateTaxWithDonationAllowances(t *testing.T) {
 				Wht:         0.0,
 				Allowances:  []Allowance{},
 			},
-			expect: 0.0,
+			expectTax: 0.0,
 		},
 		{
 			name: "Total income 500,000.0 and WHT 0.0 and donation allowance 20,000 should return 39,000",
@@ -215,7 +224,7 @@ func TestCalculateTaxWithDonationAllowances(t *testing.T) {
 					{AllowanceType: "donation", Amount: 20000.00},
 				},
 			},
-			expect: 26000.0,
+			expectTax: 26000.0,
 		},
 		{
 			name: "Total income 500,000.0 and WHT 0.0 and donation allowance 200,000 should return 19,000",
@@ -226,16 +235,63 @@ func TestCalculateTaxWithDonationAllowances(t *testing.T) {
 					{AllowanceType: "donation", Amount: 200000.00},
 				},
 			},
-			expect: 19000.0,
+			expectTax: 19000.0,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := Calculate(defaultDeductions, tc.input)
+			tax, refund := Calculate(defaultDeductions, tc.input)
 
-			if got != tc.expect {
-				t.Errorf("Expected %v, got %v", tc.expect, got)
+			if tax != tc.expectTax {
+				t.Errorf("Expected %v, got %v", tc.expectTax, tax)
+			}
+
+			if refund != 0 {
+				t.Errorf("Expected 0, got %v", refund)
+			}
+		})
+	}
+}
+
+func TestCalculateTaxAndRefund(t *testing.T) {
+	testCases := []testCase{
+		{
+			name: "Total income 500,000.0 and WHT 100,000.0 and donation allowance 200,000 should return refund 81,000",
+			input: CalculationRequest{
+				TotalIncome: 500000.0,
+				Wht:         100000.0,
+				Allowances: []Allowance{
+					{AllowanceType: "donation", Amount: 200000.00},
+				},
+			},
+			expectTax:    0.0,
+			expectRefund: 81000.0,
+		},
+		{
+			name: "Total income 1,000,000.0 and WHT 200,000.0 and donation allowance 150,000 should return refund 114,000",
+			input: CalculationRequest{
+				TotalIncome: 1000000.0,
+				Wht:         200000.0,
+				Allowances: []Allowance{
+					{AllowanceType: "donation", Amount: 150000.00},
+				},
+			},
+			expectTax:    0.0,
+			expectRefund: 114000.0,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tax, refund := Calculate(defaultDeductions, tc.input)
+
+			if tax != tc.expectTax {
+				t.Errorf("Expected %v, got %v", tc.expectTax, tax)
+			}
+
+			if refund != tc.expectRefund {
+				t.Errorf("Expected %v, got %v", tc.expectRefund, refund)
 			}
 		})
 	}

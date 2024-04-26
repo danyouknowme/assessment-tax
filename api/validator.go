@@ -37,6 +37,6 @@ func registerWhtValidation(v *validator.Validate) error {
 	return v.RegisterValidation("wht_custom_validation", func(fl validator.FieldLevel) bool {
 		wht := fl.Field().Float()
 		totalIncome := fl.Parent().FieldByName("TotalIncome").Float()
-		return wht > 0 && wht < totalIncome
+		return wht >= 0 && wht < totalIncome
 	})
 }

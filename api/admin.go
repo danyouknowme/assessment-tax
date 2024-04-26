@@ -9,12 +9,16 @@ import (
 )
 
 type SettingPersonalDeductionRequest struct {
-	Amount float64 `json:"amount"`
+	Amount float64 `json:"amount" validate:"required,min=0.0"`
 }
 
 func (s *Server) SettingPersonalDeduction(c echo.Context) error {
 	var req SettingPersonalDeductionRequest
 	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, errorResponse(err))
+	}
+
+	if err := c.Validate(req); err != nil {
 		return c.JSON(http.StatusBadRequest, errorResponse(err))
 	}
 
