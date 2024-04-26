@@ -1,6 +1,9 @@
 package tax
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 type testCase struct {
 	name   string
@@ -183,7 +186,7 @@ func TestCalculateTaxWithWht(t *testing.T) {
 	}
 }
 
-func TestCalculateTaxWithAllowances(t *testing.T) {
+func TestCalculateTaxWithDonationAllowances(t *testing.T) {
 	testCases := []testCase{
 		{
 			name: "Total income 0, WHT 0.0 and no allowances, should return 0",
@@ -224,6 +227,57 @@ func TestCalculateTaxWithAllowances(t *testing.T) {
 			got := Calculate(tc.input.TotalIncome, tc.input.Wht, tc.input.Allowances)
 
 			if got != tc.expect {
+				t.Errorf("Expected %v, got %v", tc.expect, got)
+			}
+		})
+	}
+}
+
+func TestGetTaxLevels(t *testing.T) {
+	testCases := []struct {
+		name   string
+		input  TaxCalculationRequest
+		expect []TaxLevel
+	}{
+		{
+			name: "Total income 0, should return 0 of all levels",
+			input: TaxCalculationRequest{
+				TotalIncome: 0.0,
+				Wht:         0.0,
+				Allowances:  []Allowance{},
+			},
+			expect: []TaxLevel{
+				{Level: "0-150,000", Tax: 0.0},
+				{Level: "150,001-500,000", Tax: 0.0},
+				{Level: "500,001-1,000,000", Tax: 0.0},
+				{Level: "1,000,001-2,000,000", Tax: 0.0},
+				{Level: "2,000,001 ขึ้นไป", Tax: 0.0},
+			},
+		},
+		{
+			name: "Total income 500,000 and donation allowance 200,000, should return 19,000 in level 150,000-500,000",
+			input: TaxCalculationRequest{
+				TotalIncome: 500000.0,
+				Wht:         0.0,
+				Allowances: []Allowance{
+					{AllowanceType: "donation", Amount: 200000.00},
+				},
+			},
+			expect: []TaxLevel{
+				{Level: "0-150,000", Tax: 0.0},
+				{Level: "150,001-500,000", Tax: 19000.0},
+				{Level: "500,001-1,000,000", Tax: 0.0},
+				{Level: "1,000,001-2,000,000", Tax: 0.0},
+				{Level: "2,000,001 ขึ้นไป", Tax: 0.0},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := GetTaxLevels(tc.input.TotalIncome, tc.input.Wht, tc.input.Allowances)
+
+			if !reflect.DeepEqual(got, tc.expect) {
 				t.Errorf("Expected %v, got %v", tc.expect, got)
 			}
 		})

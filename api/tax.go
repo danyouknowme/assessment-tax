@@ -14,8 +14,10 @@ func CalculateTax(c echo.Context) error {
 	}
 
 	taxVal := tax.Calculate(req.TotalIncome, req.Wht, req.Allowances)
+	taxLevels := tax.GetTaxLevels(req.TotalIncome, req.Wht, req.Allowances)
 
-	return c.JSON(http.StatusOK, map[string]float64{
-		"tax": taxVal,
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"tax":      taxVal,
+		"taxLevel": taxLevels,
 	})
 }
