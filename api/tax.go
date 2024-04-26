@@ -9,9 +9,19 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type CalculateTaxResponse struct {
+	Tax       float64        `json:"tax"`
+	TaxRefund float64        `json:"taxRefund"`
+	TaxLevel  []tax.TaxLevel `json:"taxLevel"`
+}
+
 func (s *Server) CalculateTax(c echo.Context) error {
 	var req tax.CalculationRequest
 	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, errorResponse(err))
+	}
+
+	if err := c.Validate(req); err != nil {
 		return c.JSON(http.StatusBadRequest, errorResponse(err))
 	}
 
@@ -26,11 +36,18 @@ func (s *Server) CalculateTax(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, errorResponse(err))
 	}
 
-	taxVal := tax.Calculate(defaultDeductions, req)
+	taxVal, taxRefund := tax.Calculate(defaultDeductions, req)
 	taxLevels := tax.GetTaxLevels(defaultDeductions, req)
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"tax":      taxVal,
-		"taxLevel": taxLevels,
+	if taxRefund > 0 {
+		return c.JSON(http.StatusOK, CalculateTaxResponse{
+			Tax:       0,
+			TaxRefund: taxRefund,
+		})
+	}
+
+	return c.JSON(http.StatusOK, CalculateTaxResponse{
+		Tax:      taxVal,
+		TaxLevel: taxLevels,
 	})
 }
