@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
-	"github.com/danyouknowme/assessment-tax/config"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/danyouknowme/assessment-tax/config"
 
 	"github.com/danyouknowme/assessment-tax/db"
 	mockdb "github.com/danyouknowme/assessment-tax/db/mock"
