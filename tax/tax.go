@@ -6,9 +6,9 @@ import (
 	"github.com/danyouknowme/assessment-tax/db"
 )
 
-type TaxCalculationRequest struct {
-	TotalIncome float64     `json:"totalIncome"`
-	Wht         float64     `json:"wht"`
+type CalculationRequest struct {
+	TotalIncome float64     `json:"totalIncome" validate:"required,min=0.0"`
+	Wht         float64     `json:"wht" validate:"min=0.0"`
 	Allowances  []Allowance `json:"allowances"`
 }
 
@@ -17,7 +17,7 @@ type Allowance struct {
 	Amount        float64 `json:"amount"`
 }
 
-func Calculate(defaultDeductions []db.Deduction, req TaxCalculationRequest) float64 {
+func Calculate(defaultDeductions []db.Deduction, req CalculationRequest) float64 {
 	var tax float64 = 0
 
 	donationAllowance := calculateDonationAllowance(getDeductionByType(defaultDeductions, "donation").Amount, req.Allowances)
@@ -45,7 +45,7 @@ type TaxLevel struct {
 	Tax   float64 `json:"tax"`
 }
 
-func GetTaxLevels(defaultDeductions []db.Deduction, req TaxCalculationRequest) []TaxLevel {
+func GetTaxLevels(defaultDeductions []db.Deduction, req CalculationRequest) []TaxLevel {
 	var taxLevels []TaxLevel
 
 	donationAllowance := calculateDonationAllowance(getDeductionByType(defaultDeductions, "donation").Amount, req.Allowances)

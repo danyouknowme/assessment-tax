@@ -2,10 +2,10 @@ package api
 
 import (
 	"context"
-
 	"github.com/danyouknowme/assessment-tax/config"
 	"github.com/danyouknowme/assessment-tax/db"
 	"github.com/labstack/echo/v4"
+	"log"
 )
 
 type Server struct {
@@ -27,6 +27,12 @@ func NewServer(config *config.Config, store db.Store) *Server {
 
 func (s *Server) setupRouter() {
 	e := echo.New()
+
+	validator, err := NewCustomValidator()
+	if err != nil {
+		log.Fatal("failed to create custom validator", err)
+	}
+	e.Validator = validator
 
 	e.POST("/tax/calculations", s.CalculateTax)
 	e.POST("/admin/deductions/personal", s.basicAuth(s.SettingPersonalDeduction))
