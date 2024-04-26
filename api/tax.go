@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func CalculateTax(c echo.Context) error {
+func (server *Server) CalculateTax(c echo.Context) error {
 	var req tax.TaxCalculationRequest
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
