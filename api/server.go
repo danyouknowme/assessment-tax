@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-
 	"github.com/danyouknowme/assessment-tax/config"
 	"github.com/danyouknowme/assessment-tax/db"
 	"github.com/labstack/echo/v4"
@@ -27,6 +26,8 @@ func NewServer(config *config.Config, store db.Store) *Server {
 
 func (s *Server) setupRouter() {
 	e := echo.New()
+
+	e.Validator = NewCustomValidator()
 
 	e.POST("/tax/calculations", s.CalculateTax)
 	e.POST("/admin/deductions/personal", s.basicAuth(s.SettingPersonalDeduction))
