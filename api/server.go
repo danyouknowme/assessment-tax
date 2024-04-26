@@ -2,22 +2,22 @@ package api
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/danyouknowme/assessment-tax/config"
+	"github.com/danyouknowme/assessment-tax/db"
 	"github.com/labstack/echo/v4"
 )
 
 type Server struct {
 	config *config.Config
-	db     *sql.DB
+	store  db.Store
 	router *echo.Echo
 }
 
-func NewServer(config *config.Config, db *sql.DB) *Server {
+func NewServer(config *config.Config, store db.Store) *Server {
 	server := &Server{
 		config: config,
-		db:     db,
+		store:  store,
 	}
 
 	server.setupRouter()
@@ -25,18 +25,18 @@ func NewServer(config *config.Config, db *sql.DB) *Server {
 	return server
 }
 
-func (server *Server) setupRouter() {
+func (s *Server) setupRouter() {
 	e := echo.New()
 
-	e.POST("/tax/calculations", CalculateTax)
+	e.POST("/tax/calculations", s.CalculateTax)
 
-	server.router = e
+	s.router = e
 }
 
-func (server *Server) Start(address string) error {
-	return server.router.Start(address)
+func (s *Server) Start(address string) error {
+	return s.router.Start(address)
 }
 
-func (server *Server) Shutdown(ctx context.Context) error {
-	return server.router.Shutdown(ctx)
+func (s *Server) Shutdown(ctx context.Context) error {
+	return s.router.Shutdown(ctx)
 }

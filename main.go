@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -13,18 +14,27 @@ import (
 
 	"github.com/danyouknowme/assessment-tax/api"
 	"github.com/danyouknowme/assessment-tax/config"
+	"github.com/danyouknowme/assessment-tax/db"
+
+	_ "github.com/lib/pq"
 )
 
 func main() {
 	cfg := config.New()
 
-	runGatewayServer(cfg)
+	conn, err := sql.Open("postgres", cfg.DatabaseUrl)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer conn.Close()
+
+	store := db.NewStore(conn)
+
+	runGatewayServer(cfg, store)
 }
 
-func runGatewayServer(
-	cfg *config.Config,
-) {
-	server := api.NewServer(cfg, nil)
+func runGatewayServer(cfg *config.Config, store db.Store) {
+	server := api.NewServer(cfg, store)
 
 	log.Println("Start listening for HTTP requests...")
 	go func() {
@@ -40,7 +50,7 @@ func runGatewayServer(
 	<-shutdown
 	log.Println("Shutting down server...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
