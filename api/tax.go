@@ -19,7 +19,7 @@ func (s *Server) CalculateTax(c echo.Context) error {
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			err := errors.New("invalid deduction type not found")
-			return c.JSON(http.StatusBadRequest, errorResponse(err))
+			return c.JSON(http.StatusNotFound, errorResponse(err))
 		}
 
 		err := errors.New("failed to get deductions")
