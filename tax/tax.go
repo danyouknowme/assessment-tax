@@ -21,7 +21,8 @@ func Calculate(defaultDeductions []db.Deduction, req CalculationRequest) (float6
 	var tax float64 = 0
 
 	donationAllowance := calculateDonationAllowance(getDeductionByType(defaultDeductions, "donation").Amount, req.Allowances)
-	taxableIncome := calculateTaxableIncome(req.TotalIncome, getDeductionByType(defaultDeductions, "personal").Amount, donationAllowance)
+	kReceiptAllowance := calculateKReceiptAllowance(getDeductionByType(defaultDeductions, "k-receipt").Amount, req.Allowances)
+	taxableIncome := calculateTaxableIncome(req.TotalIncome, getDeductionByType(defaultDeductions, "personal").Amount, donationAllowance, kReceiptAllowance)
 
 	for _, bracket := range taxBrackets {
 		if taxableIncome <= 0 {
@@ -53,7 +54,8 @@ func GetTaxLevels(defaultDeductions []db.Deduction, req CalculationRequest) []Ta
 	var taxLevels []TaxLevel
 
 	donationAllowance := calculateDonationAllowance(getDeductionByType(defaultDeductions, "donation").Amount, req.Allowances)
-	taxableIncome := calculateTaxableIncome(req.TotalIncome, getDeductionByType(defaultDeductions, "personal").Amount, donationAllowance)
+	kReceiptAllowance := calculateKReceiptAllowance(getDeductionByType(defaultDeductions, "k-receipt").Amount, req.Allowances)
+	taxableIncome := calculateTaxableIncome(req.TotalIncome, getDeductionByType(defaultDeductions, "personal").Amount, donationAllowance, kReceiptAllowance)
 
 	for _, bracket := range taxBrackets {
 		bracketRange := bracket.MaxTotalIncome - bracket.MinTotalIncome
@@ -66,8 +68,8 @@ func GetTaxLevels(defaultDeductions []db.Deduction, req CalculationRequest) []Ta
 	return taxLevels
 }
 
-func calculateTaxableIncome(totalIncome, personalDeduction, donationAllowance float64) float64 {
-	return totalIncome - personalDeduction - donationAllowance
+func calculateTaxableIncome(totalIncome, personalDeduction, donationAllowance, kReceiptAllowance float64) float64 {
+	return totalIncome - personalDeduction - donationAllowance - kReceiptAllowance
 }
 
 func calculateDonationAllowance(maxDonationDeduction float64, allowances []Allowance) float64 {
@@ -83,6 +85,21 @@ func calculateDonationAllowance(maxDonationDeduction float64, allowances []Allow
 	}
 
 	return donationAllowance
+}
+
+func calculateKReceiptAllowance(maxKReceiptDeduction float64, allowances []Allowance) float64 {
+	var kReceiptAllowance float64 = 0
+	for _, allowance := range allowances {
+		if allowance.AllowanceType == "k-receipt" {
+			kReceiptAllowance += allowance.Amount
+		}
+	}
+
+	if kReceiptAllowance > maxKReceiptDeduction {
+		return maxKReceiptDeduction
+	}
+
+	return kReceiptAllowance
 }
 
 func formatCalculatedTax(tax float64) float64 {
