@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strings"
@@ -32,8 +31,6 @@ func (s *Server) acceptCSVExtension(next echo.HandlerFunc) echo.HandlerFunc {
 			err := errors.New("missing file")
 			return c.JSON(http.StatusBadRequest, errorResponse(err))
 		}
-
-		fmt.Println("File Header: ", file.Header.Get("Content-Type"))
 
 		if !strings.HasPrefix(file.Header.Get("Content-Type"), "text/csv") {
 			err := errors.New("invalid file format")
