@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS "deductions" (
     "type" deduction_type NOT NULL,
     "amount" DECIMAL(10, 2) NOT NULL,
     "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_deduction_type UNIQUE ("type")
 );
 
 INSERT INTO "deductions" ("type", "amount") VALUES ('personal', 60000.00);
