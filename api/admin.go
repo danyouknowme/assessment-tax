@@ -9,7 +9,7 @@ import (
 )
 
 type SettingPersonalDeductionRequest struct {
-	Amount float64 `json:"amount" validate:"required,min=0.0,max=100000.0"`
+	Amount float64 `json:"amount" validate:"required,min=10000.0,max=100000.0"`
 }
 
 func (s *Server) SettingPersonalDeduction(c echo.Context) error {
