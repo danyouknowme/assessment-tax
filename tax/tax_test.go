@@ -254,6 +254,43 @@ func TestCalculateTaxWithDonationAllowances(t *testing.T) {
 	}
 }
 
+func TestCalculateTaxWithKReceiptAllowances(t *testing.T) {
+	testCases := []testCase{
+		{
+			name: "Total income 500,000 WHT 0.0 k-receipt 200,000 and donation 100,000 should return 14,000",
+			input: CalculationRequest{
+				TotalIncome: 500000.0,
+				Wht:         0.0,
+				Allowances: []Allowance{
+					{AllowanceType: "k-receipt", Amount: 200000.00},
+					{AllowanceType: "donation", Amount: 100000.00},
+				},
+			},
+			expectTax: 14000.0,
+		},
+		{
+			name: "Total income 500,000 WHT 0.0 k-receipt 30,000 should return 26,000",
+			input: CalculationRequest{
+				TotalIncome: 500000.0,
+				Wht:         0.0,
+				Allowances: []Allowance{
+					{AllowanceType: "k-receipt", Amount: 30000.00},
+				},
+			},
+			expectTax: 26000.0,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tax, _ := Calculate(defaultDeductions, tc.input)
+
+			if tax != tc.expectTax {
+				t.Errorf("Expected %v, got %v", tc.expectTax, tax)
+			}
+		})
+	}
+}
+
 func TestCalculateTaxAndRefund(t *testing.T) {
 	testCases := []testCase{
 		{
