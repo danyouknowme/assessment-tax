@@ -37,6 +37,7 @@ func (s *Server) setupRouter() {
 	e.POST("/tax/calculations", s.CalculateTax)
 	e.POST("/tax/calculations/upload-csv", s.acceptCSVExtension(s.CalculateTaxForCSV))
 	e.POST("/admin/deductions/personal", s.basicAuth(s.SettingPersonalDeduction))
+	e.POST("/admin/deductions/k-receipt", s.basicAuth(s.SettingKReceiptDeduction))
 
 	s.router = e
 }
