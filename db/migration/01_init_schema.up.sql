@@ -1,5 +1,5 @@
 -- Defined Type
-CREATE TYPE deduction_type AS ENUM ('personal', 'donation', 'k-receipt');
+CREATE TYPE IF NOT EXISTS deduction_type AS ENUM ('personal', 'donation', 'k-receipt');
 
 -- Table Definition
 CREATE TABLE IF NOT EXISTS "deductions" (
@@ -9,8 +9,12 @@ CREATE TABLE IF NOT EXISTS "deductions" (
     "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT unique_deduction_type UNIQUE ("type")
-);
+    );
 
-INSERT INTO "deductions" ("type", "amount") VALUES ('personal', 60000.00);
-INSERT INTO "deductions" ("type", "amount") VALUES ('donation', 100000.00);
-INSERT INTO "deductions" ("type", "amount") VALUES ('k-receipt', 50000.00);
+-- Insertions with ON CONFLICT DO NOTHING to avoid duplicates
+INSERT INTO "deductions" ("type", "amount")
+VALUES
+    ('personal', 60000.00),
+    ('donation', 100000.00),
+    ('k-receipt', 50000.00)
+ON CONFLICT (type) DO NOTHING;

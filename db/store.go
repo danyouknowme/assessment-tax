@@ -8,7 +8,6 @@ import (
 
 type Store interface {
 	GetAllDeductions(ctx context.Context) ([]Deduction, error)
-	GetDeductionByType(ctx context.Context, deductionType string) (*Deduction, error)
 	UpdateDeductionByType(ctx context.Context, deductionType string, arg UpdateDeductionParams) (*Deduction, error)
 }
 
@@ -42,21 +41,6 @@ func (s *SQLStore) GetAllDeductions(ctx context.Context) ([]Deduction, error) {
 	}
 
 	return deductions, nil
-}
-
-func (s *SQLStore) GetDeductionByType(ctx context.Context, deductionType string) (*Deduction, error) {
-	var d Deduction
-	stmt, err := s.db.Prepare("SELECT type, amount FROM deductions WHERE type = $1")
-	if err != nil {
-		return nil, err
-	}
-
-	err = stmt.QueryRowContext(ctx, deductionType).Scan(&d.Type, &d.Amount)
-	if err != nil {
-		return nil, err
-	}
-
-	return &d, err
 }
 
 func (s *SQLStore) UpdateDeductionByType(ctx context.Context, deductionType string, arg UpdateDeductionParams) (*Deduction, error) {

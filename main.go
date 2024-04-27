@@ -28,6 +28,10 @@ func main() {
 	}
 	defer conn.Close()
 
+	if err := db.PrepareDatabase(conn); err != nil {
+		log.Fatalf("Failed to prepare database: %v", err)
+	}
+
 	store := db.NewStore(conn)
 
 	runGatewayServer(cfg, store)
