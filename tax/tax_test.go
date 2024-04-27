@@ -176,7 +176,7 @@ func TestCalculateTaxWithWht(t *testing.T) {
 			expectTax: 4000.0,
 		},
 		{
-			name: "Total income 500,000.0 and WHT 25,000.0 should return 4,000",
+			name: "Total income 500,000.0 and WHT 29,000.0 should return 0",
 			input: CalculationRequest{
 				TotalIncome: 500000.0,
 				Wht:         29000.0,
@@ -215,7 +215,7 @@ func TestCalculateTaxWithDonationAllowances(t *testing.T) {
 			expectTax: 0.0,
 		},
 		{
-			name: "Total income 500,000.0 and WHT 0.0 and donation allowance 20,000 should return 39,000",
+			name: "Total income 500,000.0 and WHT 0.0 and donation allowance 30,000 should return 39,000",
 			input: CalculationRequest{
 				TotalIncome: 500000.0,
 				Wht:         0.0,
