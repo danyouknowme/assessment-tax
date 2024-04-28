@@ -1,8 +1,6 @@
 package db
 
-import (
-	"database/sql"
-)
+import "database/sql"
 
 func PrepareDatabase(db *sql.DB) error {
 	_, err := db.Exec(`
