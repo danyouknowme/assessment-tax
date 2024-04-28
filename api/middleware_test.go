@@ -3,10 +3,6 @@ package api
 import (
 	"bytes"
 	"fmt"
-	"github.com/danyouknowme/assessment-tax/config"
-	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"io"
 	"mime"
 	"mime/multipart"
@@ -16,6 +12,11 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/danyouknowme/assessment-tax/config"
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestBasicAuthMiddleware(t *testing.T) {

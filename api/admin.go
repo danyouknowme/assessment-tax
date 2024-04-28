@@ -3,9 +3,10 @@ package api
 import (
 	"database/sql"
 	"errors"
+	"net/http"
+
 	"github.com/danyouknowme/assessment-tax/db"
 	"github.com/labstack/echo/v4"
-	"net/http"
 )
 
 type SettingPersonalDeductionRequest struct {

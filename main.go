@@ -24,12 +24,12 @@ func main() {
 
 	conn, err := sql.Open("postgres", cfg.DatabaseUrl)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatalf("failed to connect to database: %v", err)
 	}
 	defer conn.Close()
 
 	if err := db.PrepareDatabase(conn); err != nil {
-		log.Fatalf("Failed to prepare database: %v", err)
+		log.Fatalf("failed to prepare database: %v", err)
 	}
 
 	store := db.NewStore(conn)
@@ -40,11 +40,11 @@ func main() {
 func runGatewayServer(cfg *config.Config, store db.Store) {
 	server := api.NewServer(cfg, store)
 
-	log.Println("Start listening for HTTP requests...")
+	log.Println("start listening for HTTP requests...")
 	go func() {
-		log.Printf("Server listening on port %s\n", cfg.Port)
+		log.Printf("server listening on port %s\n", cfg.Port)
 		if err := server.Start(fmt.Sprintf(":%s", cfg.Port)); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("Failed to start server: %v", err)
+			log.Fatalf("failed to start server: %v", err)
 		}
 	}()
 
@@ -52,15 +52,15 @@ func runGatewayServer(cfg *config.Config, store db.Store) {
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
 
 	<-shutdown
-	log.Println("Shutting down server...")
+	log.Println("shutting down the server")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		log.Println("Failed to shutdown server gracefully:", err)
+		log.Println("failed to shutdown server gracefully:", err)
 	}
 
 	<-ctx.Done()
-	log.Println("Server shutdown gracefully")
+	log.Println("server shutdown gracefully")
 }

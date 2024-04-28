@@ -15,4 +15,7 @@ run:
 test:
 	go test -v -cover ./...
 
-.PHONY: migrateup mock run test
+it-test:
+	go test -v -tags=integration ./...
+
+.PHONY: migrateup mock run test it-test

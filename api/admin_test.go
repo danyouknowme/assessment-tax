@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
 	"github.com/danyouknowme/assessment-tax/config"
 	"github.com/danyouknowme/assessment-tax/db"
 	mockdb "github.com/danyouknowme/assessment-tax/db/mock"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"net/http/httptest"
-	"strings"
-	"testing"
 )
 
 func TestAdminSetPersonalDeductionAPI(t *testing.T) {
