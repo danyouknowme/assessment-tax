@@ -2,10 +2,11 @@ package api
 
 import (
 	"context"
+	"log"
+
 	"github.com/danyouknowme/assessment-tax/config"
 	"github.com/danyouknowme/assessment-tax/db"
 	"github.com/labstack/echo/v4"
-	"log"
 )
 
 type Server struct {

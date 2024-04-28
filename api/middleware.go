@@ -2,9 +2,10 @@ package api
 
 import (
 	"errors"
-	"github.com/labstack/echo/v4"
 	"net/http"
 	"strings"
+
+	"github.com/labstack/echo/v4"
 )
 
 func (s *Server) basicAuth(next echo.HandlerFunc) echo.HandlerFunc {
